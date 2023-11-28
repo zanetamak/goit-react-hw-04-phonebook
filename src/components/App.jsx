@@ -31,8 +31,7 @@ export const App = () => {
     } catch (error) {
       console.log(error);
     }
-  }
-  );
+  },[]);
 
   // useEffect do zapisywania danych do localStorage po aktualizacji stanu contacts
   useEffect(() => {
