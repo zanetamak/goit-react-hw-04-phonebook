@@ -6,35 +6,40 @@ import ContactList from './ContactList/ContactList';
 import Filter from './Filter/Filter';
 
 export const App = () => {
-  const [contacts, setContacts] = useState([
-    { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-    { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-    { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-    { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-  ]);
+  const [contacts, setContacts] = useState(
+  JSON.parse(localStorage.getItem('contacts')) || []
+  );
+  
+  // Początkowy stan contacts jest ustawiany przy użyciu JSON.parse(localStorage.getItem('contacts')) || []. tutaj próba pobrania danych z localStorage. Jeżeli dane istnieją = parsowane, jeśli nie = pusta tablica [] jako początkowy stan.
+// przydatne gdy użytkownik odwiedza stronę ponownie, a my chcemy zachować wcześniejszy stan. konieczne uzycie || [] - gdy danych nie ma / są uszkodzone
 
   const [filter, setFilter] = useState('');
 
   
    // metoda cyklu życiowego komponentu wywoływana po tym, jak komponent został umieszczony(zamontowany) 
    // w drzewie komponentów React. próba pobrania danych z lokalnego magazynu (localStorage) pod kluczem 'contacts'.
-    useEffect(() => { // componentDidMount
-    const json = JSON.stringify(contacts);
-    localStorage.setItem('contacts', json);
-  }, [contacts]);  
   
-  useEffect(() => { // componentDidMount
+    // useEffect do pobierania danych z localStorage przy montowaniu komponentu
+  useEffect(() => {
     try {
       const json = localStorage.getItem('contacts');
-      const parsedContacts = JSON.parse(json);
+      const savedContacts = JSON.parse(json);
 
-      if (parsedContacts) {
-        setContacts(parsedContacts);
+      if (savedContacts) {
+        setContacts(savedContacts);
       }
     } catch (error) {
-      console.error(error);
+      console.log(error);
     }
-  }, []);
+  }
+  );
+
+  // useEffect do zapisywania danych do localStorage po aktualizacji stanu contacts
+  useEffect(() => {
+    const json = JSON.stringify(contacts);
+    localStorage.setItem('contacts', json);
+  }, [contacts]); // useEffect zostanie uruchomiony tylko po zmianie stanu contacts
+
 
   const addContact = e => {
     const loweredCase = e.name.toLowerCase().trim();
@@ -46,7 +51,9 @@ export const App = () => {
     if (exists) {
       alert(`${e.name} is already in contacts!`);
     } else {
-      setContacts([...contacts, e]);
+      setContacts([...contacts, e]); // uzycie setContacts zamiast 
+      // this.setState(({ contacts }) => ({
+      // contacts: [...contacts, e],
     }
   };
 
@@ -54,12 +61,14 @@ export const App = () => {
     setFilter(e.currentTarget.value);
   };
 
-  const filteredContacts = contacts.filter(contact => {
+  const filteredContacts = contacts.filter(contact => { // const { filter, contacts } = this.state;
+    //   // logika filtrowania na podstawie stanu filter
     return contact.name.toLowerCase().includes(filter.toLowerCase());
   });
 
   const deleteContact = id => {
-   setContacts(prevContacts => prevContacts.filter(contact => contact.id !== id));
+  const filtered = contacts.filter(contact => contact.id !== id);
+  setContacts(filtered);
 };
 // brak render przy hookach
     return (
